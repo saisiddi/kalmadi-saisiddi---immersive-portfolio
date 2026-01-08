@@ -1,0 +1,79 @@
+/* Base Styles */
+body {
+  cursor: none;
+  background-color: #050505;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+a,
+button,
+[role="button"],
+input,
+.cursor-pointer {
+  cursor: none;
+}
+
+/* Mobile: Restore default cursor */
+@media (max-width: 768px) {
+
+  body,
+  a,
+  button,
+  [role="button"],
+  input,
+  .cursor-pointer {
+    cursor: auto;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #22c55e;
+}
+
+/* Animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
