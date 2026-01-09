@@ -1,30 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050505;
+  --color-surface: #0a0a0a;
+  --color-primary: #FFFFFF;
+  --color-secondary: #A1A1AA;
+  --color-accent: #22c55e;
+
+  --font-sans: "Manrope", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+}
+
 /* Base Styles */
-body {
-  cursor: none;
-  background-color: #050505;
-  color: #ffffff;
-  overflow-x: hidden;
-}
+@layer base {
+  * {
+    cursor: none;
+  }
 
-a,
-button,
-[role="button"],
-input,
-.cursor-pointer {
-  cursor: none;
-}
+  html {
+    scroll-behavior: auto;
+  }
 
-/* Mobile: Restore default cursor */
-@media (max-width: 768px) {
+  body {
+    background-color: #050505;
+    color: #ffffff;
+    overflow-x: hidden;
+    @apply font-sans;
+  }
 
-  body,
   a,
   button,
   [role="button"],
   input,
   .cursor-pointer {
-    cursor: auto;
+    cursor: none;
   }
+}
+
+/* Utility Layers */
+@layer utilities {
+  .bg-gradient-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+}
+
+/* Lenis Smooth Scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Selection */
+::selection {
+  background: #22c55e;
+  color: #000000;
 }
 
 /* Scrollbar */
@@ -45,35 +101,9 @@ input,
   background: #22c55e;
 }
 
-/* Animations */
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
+/* Mobile: Restore default cursor */
+@media (max-width: 768px) {
+  * {
+    cursor: auto !important;
   }
-
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes pulse-slow {
-
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 4s ease-in-out infinite;
 }

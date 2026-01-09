@@ -6,13 +6,13 @@ const TechMarquee = () => {
   return (
     <div className="py-24 overflow-hidden border-y border-white/5 bg-background/50 backdrop-blur-sm relative z-10">
       <div className="flex whitespace-nowrap">
-        <motion.div 
+        <motion.div
           className="flex gap-16 items-center pr-16"
           animate={{ x: "-50%" }}
-          transition={{ 
-            duration: 20, 
-            ease: "linear", 
-            repeat: Infinity 
+          transition={{
+            duration: 35,
+            ease: "linear",
+            repeat: Infinity
           }}
         >
           {[...SKILLS, ...SKILLS, ...SKILLS, ...SKILLS].map((skill, i) => (

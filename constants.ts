@@ -7,7 +7,7 @@ export const PROFILE = {
   bio: "I am a passionate Front-End Developer specializing in building immersive, interactive web experiences. With expertise in React, Three.js, and modern animation libraries, I transform creative visions into pixel-perfect reality. A serial hackathon competitor with top-10 finishes at major institutions, I thrive at the intersection of design and development.",
   status: "Open for opportunities",
   email: "143saisiddi@gmail.com",
-  image: "/profile.png",
+  image: "/profile.webp",
 };
 
 export const PROJECTS: Project[] = [

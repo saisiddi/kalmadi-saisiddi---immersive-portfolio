@@ -1,6 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, lazy } from 'react';
 import { ArrowDown } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { Suspense } from 'react';
 import MagneticButton from './ui/MagneticButton';
+// Lazy load the heavy holographic component
+const HolographicPortrait = lazy(() => import('./3d/HolographicPortrait'));
 import { PROFILE } from '../constants';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -93,9 +97,9 @@ const Hero = () => {
       <div className="max-w-[1600px] w-full mx-auto relative z-10">
 
         {/* Role Tag */}
-        <div className="hero-role flex items-center gap-4 mb-8 md:mb-12">
-          <span className="inline-block w-12 h-[1px] bg-accent" />
-          <p className="font-mono text-accent text-xs md:text-sm tracking-[0.3em] uppercase">
+        <div className="hero-role flex items-center gap-4 mb-8 md:mb-12 group cursor-default">
+          <span className="inline-block w-12 h-[1px] bg-accent transition-all duration-500 group-hover:w-20" />
+          <p className="font-mono text-accent text-xs md:text-sm tracking-[0.3em] uppercase transition-all duration-500 group-hover:tracking-[0.5em]">
             {PROFILE.role}
           </p>
         </div>
@@ -117,26 +121,48 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Bio & CTA */}
-        <div className="hero-bio-container flex flex-col lg:flex-row lg:items-end justify-between gap-12 lg:gap-20">
+        {/* Bio & CTA & Portrait */}
+        <div className="hero-bio-container flex flex-col lg:flex-row lg:items-center justify-between gap-12 lg:gap-20">
 
-          <div className="hero-bio max-w-2xl">
-            <p className="text-lg md:text-xl lg:text-2xl text-secondary leading-relaxed font-light">
-              {PROFILE.bio}
-            </p>
+          <div className="flex-1 flex flex-col gap-8 z-10">
+            <div className="hero-bio max-w-2xl">
+              <p className="text-lg md:text-xl lg:text-2xl text-secondary leading-relaxed font-light">
+                {PROFILE.bio}
+              </p>
+            </div>
+
+            <div className="hero-cta flex items-center gap-8">
+              <MagneticButton onClick={scrollToWork}>
+                <div className="h-36 w-36 md:h-40 md:w-40 rounded-full border border-white/20 flex items-center justify-center bg-white/[0.02] backdrop-blur-sm hover:bg-accent hover:text-black hover:border-transparent transition-all duration-500 group cursor-pointer relative overflow-hidden">
+                  <span className="font-mono text-sm tracking-wider group-hover:opacity-0 transition-opacity duration-300">View Work</span>
+                  <ArrowDown className="absolute opacity-0 group-hover:opacity-100 w-8 h-8 transition-all duration-300 animate-bounce" />
+
+                  {/* Hover ring effect */}
+                  <span className="absolute inset-0 rounded-full border border-white/10 scale-100 group-hover:scale-150 group-hover:opacity-0 transition-all duration-700" />
+                </div>
+              </MagneticButton>
+            </div>
           </div>
 
-          <div className="hero-cta flex items-center gap-8">
-            <MagneticButton onClick={scrollToWork}>
-              <div className="h-36 w-36 md:h-40 md:w-40 rounded-full border border-white/20 flex items-center justify-center bg-white/[0.02] backdrop-blur-sm hover:bg-accent hover:text-black hover:border-transparent transition-all duration-500 group cursor-pointer relative overflow-hidden">
-                <span className="font-mono text-sm tracking-wider group-hover:opacity-0 transition-opacity duration-300">View Work</span>
-                <ArrowDown className="absolute opacity-0 group-hover:opacity-100 w-8 h-8 transition-all duration-300 animate-bounce" />
+          {/* 3D Holographic Portrait */}
+          <div className="w-full lg:w-1/2 h-[50vh] lg:h-[60vh] relative min-h-[400px]">
+            <div className="absolute inset-0 z-0">
+              <Canvas
+                camera={{ position: [0, 0, 5], fov: 50 }}
+                gl={{ alpha: true, antialias: true }}
+                className="w-full h-full"
+              >
+                <Suspense fallback={null}>
+                  <HolographicPortrait imageUrl={PROFILE.image} />
+                </Suspense>
+              </Canvas>
+            </div>
 
-                {/* Hover ring effect */}
-                <span className="absolute inset-0 rounded-full border border-white/10 scale-100 group-hover:scale-150 group-hover:opacity-0 transition-all duration-700" />
-              </div>
-            </MagneticButton>
+            {/* Tech Decoration Overlay */}
+            <div className="absolute top-0 right-0 w-32 h-32 border-t-2 border-r-2 border-accent/20 rounded-tr-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 border-b-2 border-l-2 border-accent/20 rounded-bl-3xl pointer-events-none" />
           </div>
+
         </div>
       </div>
 

@@ -47,36 +47,31 @@ const DigitalThread = () => {
                 trigger: document.body,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 2,
+                scrub: 0.5,
             }
         });
 
-        // Draw the glow layer first (wider, more diffuse)
-        tl.to(glowPath, {
-            strokeDashoffset: 0,
-            ease: "none",
-            duration: 1,
-        }, 0);
+        // Safe animation sequence
+        if (glowPath) {
+            tl.to(glowPath, {
+                strokeDashoffset: 0,
+                ease: "none",
+                duration: 1,
+            }, 0);
+        }
 
-        // Draw the trail layer (medium)
-        tl.to(trailPath, {
-            strokeDashoffset: 0,
-            ease: "none",
-            duration: 1,
-        }, 0.02);
-
-        // Draw the main crisp line
-        tl.to(path, {
-            strokeDashoffset: 0,
-            ease: "none",
-            duration: 1,
-        }, 0.05);
+        if (path) {
+            tl.to(path, {
+                strokeDashoffset: 0,
+                ease: "none",
+                duration: 1,
+            }, 0.05);
+        }
 
         // Spark follows the path
         if (spark && path) {
             gsap.set(spark, { opacity: 0, scale: 0 });
 
-            // Reveal spark with entrance animation
             gsap.to(spark, {
                 opacity: 1,
                 scale: 1,
@@ -85,7 +80,6 @@ const DigitalThread = () => {
                 ease: "back.out(1.7)",
             });
 
-            // Pulse animation for the spark
             gsap.to(spark, {
                 scale: 1.2,
                 duration: 0.8,
@@ -94,18 +88,15 @@ const DigitalThread = () => {
                 ease: "sine.inOut",
             });
 
-            // Follow the path
             ScrollTrigger.create({
                 trigger: document.body,
                 start: "top top",
                 end: "bottom bottom",
-                scrub: 2,
+                scrub: 0.5,
                 onUpdate: (self) => {
                     if (!path || !spark) return;
-
                     const progress = self.progress;
                     const point = path.getPointAtLength(progress * pathLength);
-
                     gsap.set(spark, {
                         x: point.x,
                         y: point.y,
@@ -115,45 +106,50 @@ const DigitalThread = () => {
         }
 
         return () => {
-            ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+            tl.kill();
+            ScrollTrigger.getAll().forEach(t => t.kill());
         };
     }, [isMobile]);
 
-    if (isMobile) return null;
+    // Generate a more elegant, organic "Circuitry" path
+    const { pathData, nodes } = React.useMemo(() => {
+        let d = "M 50 0";
+        const nodesList: { x: number, y: number }[] = [];
+        const totalHeight = 4000;
+        const steps = 14; // Much fewer steps = smoother, larger curves
+        const amplitude = 35;
 
-    // Organic, flowing path that weaves through the page
-    const pathData = `
-    M 50 0
-    C 50 30, 25 50, 25 80
-    S 75 110, 75 140
-    C 75 170, 30 190, 30 220
-    S 70 250, 70 280
-    C 70 310, 40 330, 40 360
-    S 60 390, 60 420
-    C 60 450, 35 470, 35 500
-    S 65 530, 65 560
-    C 65 590, 45 610, 45 640
-    S 55 670, 55 700
-    C 55 730, 50 750, 50 780
-    L 50 800
-  `;
+        for (let i = 1; i <= steps; i++) {
+            const yPrev = ((i - 1) / steps) * totalHeight;
+            const yCurr = (i / steps) * totalHeight;
+            const xCurr = i % 2 === 0 ? 50 - amplitude : 50 + amplitude;
+            const xPrev = i % 2 === 0 ? 50 + amplitude : 50 - amplitude;
+
+            // Deep, elegant bezier curves
+            d += ` C ${xPrev} ${yPrev + 150}, ${xCurr} ${yCurr - 150}, ${xCurr} ${yCurr}`;
+
+            // Add a node at each major turn
+            nodesList.push({ x: xCurr, y: yCurr });
+        }
+        return { pathData: d, nodes: nodesList };
+    }, []);
+
+    if (isMobile) return null;
 
     return (
         <div
             ref={containerRef}
-            className="fixed top-0 left-0 w-full h-screen pointer-events-none"
-            style={{ zIndex: 1 }}
+            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+            style={{ zIndex: 0 }}
         >
             <svg
-                viewBox="0 0 100 800"
+                viewBox="0 0 100 4000"
                 preserveAspectRatio="none"
-                className="w-full"
+                className="w-full h-full"
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
+                    display: 'block',
                     width: '100%',
-                    height: '400vh',
+                    height: '100%',
                 }}
             >
                 <defs>
@@ -166,12 +162,6 @@ const DigitalThread = () => {
                             <feMergeNode in="blur1" />
                             <feMergeNode in="SourceGraphic" />
                         </feMerge>
-                    </filter>
-
-                    {/* Inner glow for the spark */}
-                    <filter id="sparkGlow" x="-200%" y="-200%" width="500%" height="500%">
-                        <feGaussianBlur stdDeviation="3" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
 
                     {/* Gradient that pulses with green shades only */}
@@ -201,50 +191,41 @@ const DigitalThread = () => {
                     </radialGradient>
                 </defs>
 
-                {/* Layer 1: Outer diffuse glow (widest) */}
+                {/* Layer 1: Diffuse Glow */}
                 <path
                     ref={glowPathRef}
                     d={pathData}
                     fill="none"
                     stroke="url(#glowGradient)"
-                    strokeWidth="6"
+                    strokeWidth="8"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
                     filter="url(#softGlow)"
-                    opacity="0.6"
-                    style={{ willChange: 'stroke-dashoffset' }}
-                />
-
-                {/* Layer 2: Medium trail */}
-                <path
-                    ref={trailPathRef}
-                    d={pathData}
-                    fill="none"
-                    stroke="#22c55e"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                     opacity="0.4"
-                    style={{ willChange: 'stroke-dashoffset' }}
                 />
 
-                {/* Layer 3: Main crisp line */}
+                {/* Layer 2: Core Thread */}
                 <path
                     ref={pathRef}
                     d={pathData}
                     fill="none"
                     stroke="url(#threadGradient)"
-                    strokeWidth="0.5"
+                    strokeWidth="0.7"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ willChange: 'stroke-dashoffset' }}
                 />
+
+                {/* Layer 3: Digital Nodes (Added for "Good Details") */}
+                {nodes.map((node, i) => (
+                    <g key={i} transform={`translate(${node.x}, ${node.y})`}>
+                        <circle r="1.5" fill="#22c55e" opacity="0.2" filter="url(#softGlow)" />
+                        <circle r="0.6" fill="#4ade80" />
+                    </g>
+                ))}
 
                 {/* The Spark - A multi-layered glowing orb */}
                 <g ref={sparkRef} style={{ willChange: 'transform' }}>
                     {/* Outer glow ring */}
                     <circle
-                        r="4"
+                        r="5"
                         fill="url(#sparkRadial)"
                         opacity="0.6"
                     />

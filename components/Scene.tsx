@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,7 +7,7 @@ const ParticleField = () => {
   const ref = useRef<THREE.Points>(null);
 
   const particles = useMemo(() => {
-    const count = 2000;
+    const count = 1500; // Optimized count
     const positions = new Float32Array(count * 3);
 
     for (let i = 0; i < count; i++) {
@@ -24,53 +24,59 @@ const ParticleField = () => {
 
   useFrame((state, delta) => {
     if (ref.current) {
-      ref.current.rotation.x -= delta / 25;
-      ref.current.rotation.y -= delta / 30;
+      ref.current.rotation.x -= delta / 30;
+      ref.current.rotation.y -= delta / 35;
 
-      // Subtle mouse interaction
       const { pointer } = state;
-      ref.current.rotation.x += pointer.y * 0.0003;
-      ref.current.rotation.y += pointer.x * 0.0003;
+      ref.current.rotation.x += pointer.y * 0.0002;
+      ref.current.rotation.y += pointer.x * 0.0002;
     }
   });
 
   return (
-    // @ts-ignore
     <group rotation={[0, 0, Math.PI / 4]}>
       <Points ref={ref} positions={particles} stride={3} frustumCulled={false}>
         <PointMaterial
           transparent
           color="#22c55e"
-          size={0.025}
+          size={0.03}
           sizeAttenuation={true}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
-          opacity={0.4}
+          opacity={0.3}
         />
       </Points>
-      {/* @ts-ignore */}
     </group>
   );
 };
 
 const Scene = () => {
-  // Check for mobile/reduced motion preference
-  const shouldRender = !window.matchMedia('(max-width: 768px)').matches &&
-    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    const checkVisible = () => {
+      const isDesktop = !window.matchMedia('(max-width: 1024px)').matches;
+      const motionOK = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setShouldRender(isDesktop && motionOK);
+    };
+
+    checkVisible();
+    window.addEventListener('resize', checkVisible);
+    return () => window.removeEventListener('resize', checkVisible);
+  }, []);
 
   if (!shouldRender) return null;
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-30">
-      <Canvas
-        camera={{ position: [0, 0, 12], fov: 40 }}
-        dpr={[1, 1.5]} // Limit pixel ratio for performance
-      >
-        <ParticleField />
-        {/* @ts-ignore */}
-        <ambientLight intensity={0.3} />
-      </Canvas>
-    </div>
+    <Canvas
+      camera={{ position: [0, 0, 15], fov: 45 }}
+      dpr={[1, 1.5]}
+      gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
+      className="w-full h-full opacity-30"
+    >
+      <ambientLight intensity={0.5} />
+      <ParticleField />
+    </Canvas>
   );
 };
 
